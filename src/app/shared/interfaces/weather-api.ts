@@ -34,8 +34,6 @@ export interface WeatherCityResponsBody extends Coordinates {
 
 export interface WeatherResponseBody {
   dt: number;
-  temp: number;
-  feels_like: number;
   pressure: number;
   humidity: number;
   dew_point: number;
@@ -55,11 +53,15 @@ export interface WeatherDailyResponseBody extends WeatherResponseBody {
   moonrise: number;
   moonset: number;
   moon_phase: number;
+  feels_like: Omit<Temperature, 'max' | 'min'>;
+  temp: Temperature;
 }
 
 export interface WeatherHourlyResponseBody extends WeatherResponseBody {
-    visibility: number;
-  }
+  feels_like: number;
+  visibility: number;
+  temp: number;
+}
 
 type PressSet = 'current' | 'minutely' | 'alerts';
 export type HourlyPress = PressSet | 'hourly';
