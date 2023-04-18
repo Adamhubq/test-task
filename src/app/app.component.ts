@@ -1,4 +1,5 @@
 import { Component } from '@angular/core';
+import { ApiWeatherService } from './shared/services/api-weather.service';
 
 @Component({
   selector: 'app-root',
@@ -7,4 +8,9 @@ import { Component } from '@angular/core';
 })
 export class AppComponent {
   title = 'test-task';
+
+  constructor( private api: ApiWeatherService){
+    console.log(api);
+    
+  }
 }
