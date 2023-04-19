@@ -30,7 +30,7 @@ export class ApiWeatherService {
     })
   }
 
-  getDataCity(lat: Number, lon: Number, exclude: HourlyPress[] | DayPress[]){
+  getDataCity(lat: Number, lon: Number, exclude: 'hourly' | 'daily'){ // HourlyPress[] | DayPress[]
     return this._http.get(`${this.BASE_URL}data/2.5/onecall`, {
       params: new HttpParams({
         fromObject:{

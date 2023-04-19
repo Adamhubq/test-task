@@ -1,4 +1,8 @@
-import { ChangeDetectionStrategy, Component } from '@angular/core';
+import { ChangeDetectionStrategy, Component, OnInit } from '@angular/core';
+import { UntilDestroy, untilDestroyed } from '@ngneat/until-destroy';
+import { ApiWeatherService } from '@shared/services/api-weather.service';
+import { StoreWeatherService } from '@shared/services/store-weather.service';
+import { mergeMap } from 'rxjs';
 
 export interface PeriodicElement {
   name: string;
@@ -8,28 +12,34 @@ export interface PeriodicElement {
 }
 
 const ELEMENT_DATA: PeriodicElement[] = [
-  {position: 1, name: 'Hydrogen', weight: 1.0079, symbol: 'H'},
-  {position: 2, name: 'Helium', weight: 4.0026, symbol: 'He'},
-  {position: 3, name: 'Lithium', weight: 6.941, symbol: 'Li'},
-  {position: 4, name: 'Beryllium', weight: 9.0122, symbol: 'Be'},
-  {position: 5, name: 'Boron', weight: 10.811, symbol: 'B'},
-  {position: 6, name: 'Carbon', weight: 12.0107, symbol: 'C'},
-  {position: 7, name: 'Nitrogen', weight: 14.0067, symbol: 'N'},
-  {position: 8, name: 'Oxygen', weight: 15.9994, symbol: 'O'},
-  {position: 9, name: 'Fluorine', weight: 18.9984, symbol: 'F'},
-  {position: 10, name: 'Neon', weight: 20.1797, symbol: 'Ne'},
+  { position: 1, name: 'Hydrogen', weight: 1.0079, symbol: 'H' },
+  { position: 2, name: 'Helium', weight: 4.0026, symbol: 'He' },
+  { position: 3, name: 'Lithium', weight: 6.941, symbol: 'Li' },
+  { position: 4, name: 'Beryllium', weight: 9.0122, symbol: 'Be' },
+  { position: 5, name: 'Boron', weight: 10.811, symbol: 'B' },
+  { position: 6, name: 'Carbon', weight: 12.0107, symbol: 'C' },
+  { position: 7, name: 'Nitrogen', weight: 14.0067, symbol: 'N' },
+  { position: 8, name: 'Oxygen', weight: 15.9994, symbol: 'O' },
+  { position: 9, name: 'Fluorine', weight: 18.9984, symbol: 'F' },
+  { position: 10, name: 'Neon', weight: 20.1797, symbol: 'Ne' },
 ];
 
+@UntilDestroy()
 @Component({
   selector: 'app-index',
   templateUrl: './index.component.html',
-  changeDetection: ChangeDetectionStrategy.OnPush
+  changeDetection: ChangeDetectionStrategy.OnPush,
 })
-export class IndexComponent {
-
+export class IndexComponent implements OnInit {
   displayedColumns: string[] = ['position', 'name', 'weight', 'symbol'];
   dataSource = ELEMENT_DATA;
 
-  constructor() {
+  constructor(private _apiWeatherService: ApiWeatherService, private _storeWeatherService: StoreWeatherService) {}
+
+  ngOnInit() {
+    // this._storeWeatherService.changeCityObject$.pipe(
+    //   mergeMap(cityObject => this._apiWeatherService.getDataCity(cityObject.lat, cityObject.lon, ))
+    //   untilDestroyed(this)
+    //   ).subscribe((cityObject) => {});
   }
 }
