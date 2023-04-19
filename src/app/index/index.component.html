@@ -16,7 +16,6 @@
   <tr mat-row *matRowDef="let row; columns: displayedColumns"></tr>
 </table>
 
-
 <table *ngIf="presset === 'hourly'" mat-table [dataSource]="dataSourceHour" class="mat-elevation-z8">
   <ng-container matColumnDef="city_name">
     <th mat-header-cell *matHeaderCellDef>City Name</th>

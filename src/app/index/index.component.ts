@@ -9,7 +9,7 @@ import {
 } from '@shared/interfaces/weather-api';
 import { ApiWeatherService } from '@shared/services/api-weather.service';
 import { StoreWeatherService } from '@shared/services/store-weather.service';
-import { switchMap, Observable, of, forkJoin } from 'rxjs';
+import { switchMap, Observable, of, forkJoin, tap } from 'rxjs';
 
 @UntilDestroy()
 @Component({
@@ -33,11 +33,7 @@ export class IndexComponent implements OnInit {
   ) {}
 
   ngOnInit() {
-    // todo forkjoin
-    this._storeWeatherService.changePresset$.subscribe((preset) => {
-      this.presset = preset;
-      this;
-    });
+    this._observation();
     if (this.presset === 'daily') {
       this.loadDayPreset()
         .pipe(switchMap((cityObject) => (cityObject ? this.loadColumnDay(cityObject) : of(null))))
@@ -116,12 +112,49 @@ export class IndexComponent implements OnInit {
     ];
   }
 
-  private _loadWithChangePresset(): Observable<Object[]> {
+  private _loadWithChangePresset(): Observable<(WeatherCityHourlyResponsBody | WeatherCityDailyResponsBody)[]> {
     if (this.presset === 'daily') {
-      return forkJoin(this.dataSourceDay.map((city) => this._apiWeatherService.getDataCity(city.lat, city.lon, this.presset)));
+      return <Observable<WeatherCityDailyResponsBody[]>>(
+        forkJoin(
+          this.dataSourceHour.map((city) => this._apiWeatherService.getDataCity(city.lat, city.lon, this.presset)),
+        )
+      );
     }
     if (this.presset === 'hourly') {
-      return forkJoin(this.dataSourceHour.map((city) => this._apiWeatherService.getDataCity(city.lat, city.lon, this.presset)));
+      return <Observable<WeatherCityHourlyResponsBody[]>>(
+        forkJoin(
+          this.dataSourceDay.map((city) => this._apiWeatherService.getDataCity(city.lat, city.lon, this.presset)),
+        )
+      );
     }
+  }
+
+  private _observation(): void {
+    this._storeWeatherService.changePresset$
+      .pipe(
+        switchMap((presset) => {
+          this.presset = presset;
+          this._cd.detectChanges();
+          return this._loadWithChangePresset();
+        }),
+        switchMap((weatherCityArray: (WeatherCityDailyResponsBody | WeatherCityHourlyResponsBody)[]) => {
+          if (this.presset === 'daily') {
+            this.dataSourceDay = structuredClone(this.dataSourceHour);
+            this.dataSourceDay.forEach((weatherCity, i) => {
+              weatherCity.daily = (<WeatherCityDailyResponsBody>weatherCityArray[i]).daily;
+            });
+            return this.loadColumnDay(weatherCityArray[0] as WeatherCityDailyResponsBody);
+          }
+
+          if (this.presset === 'hourly') {
+            this.dataSourceHour = structuredClone(this.dataSourceDay);
+            this.dataSourceHour.forEach((weatherCity, i) => {
+              weatherCity.hourly = (<WeatherCityHourlyResponsBody>weatherCityArray[i]).hourly;
+            });
+            return this.loadColumnHour(weatherCityArray[0] as WeatherCityHourlyResponsBody);
+          }
+        }),
+      )
+      .subscribe(() => this._cd.detectChanges());
   }
 }

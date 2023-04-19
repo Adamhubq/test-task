@@ -14,8 +14,8 @@ import {
 })
 export class ApiWeatherService {
   private readonly BASE_URL = 'https://api.openweathermap.org/';
-  private readonly VERSION_ONE_CALL = 2.5
-  private readonly VERSION_DIRECT = 1.0
+  private readonly VERSION_ONE_CALL = '2.5'
+  private readonly VERSION_DIRECT = '1.0'
 
   constructor(private _http: HttpClient) {}
   

@@ -63,8 +63,6 @@ export class HeaderComponent implements OnInit {
   }
 
   openSnackBar(message: string, action: string) {
-    console.log(1);
-    
     this._snackBar.open(message, action);
   }
 
