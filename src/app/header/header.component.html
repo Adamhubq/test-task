@@ -1,0 +1,23 @@
+<header class="p-3 bg-light text-white">
+  <div class="d-flex flex-wrap align-items-center justify-content-between">
+    <mat-form-field class="example-full-width">
+      <mat-label>City name</mat-label>
+      <input [formControl]="cityName" type="text" matInput [matAutocomplete]="auto" />
+      <mat-autocomplete #auto="matAutocomplete">
+        <mat-option class="bg-dark" *ngFor="let cityName of filteredCityNames | async" [value]="cityNames">
+          {{ cityName | getFieldObject: 'name' }}
+        </mat-option>
+      </mat-autocomplete>
+    </mat-form-field>
+
+    <mat-form-field class="example-full-width">
+      <mat-label>Locale</mat-label>
+      <input [formControl]="controlLocale" type="text" matInput [matAutocomplete]="auto" />
+      <mat-autocomplete #auto="matAutocomplete">
+        <mat-option class="bg-dark" *ngFor="let locale of filteredLocales | async" [value]="locales">
+          {{ locale }}
+        </mat-option>
+      </mat-autocomplete>
+    </mat-form-field>
+  </div>
+</header>

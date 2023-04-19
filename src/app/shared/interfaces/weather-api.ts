@@ -26,11 +26,11 @@ export interface WeatherCityResponsBody extends Coordinates {
   state: string;
 }
 
-export interface WeatherCityResponsBody extends Coordinates {
-  timezone: string;
-  timezone_offset: number;
-  hourly: WeatherHourlyResponseBody[] | WeatherDailyResponseBody[];
-}
+// export interface WeatherCityResponsBody extends Coordinates {
+//   timezone: string;
+//   timezone_offset: number;
+//   hourly: WeatherHourlyResponseBody[] | WeatherDailyResponseBody[];
+// }
 
 export interface WeatherResponseBody {
   dt: number;
