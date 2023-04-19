@@ -7,7 +7,7 @@ import { AppComponent } from './app.component';
 import { HeaderComponent } from './header/header.component';
 import { FooterComponent } from './footer/footer.component';
 import { MatAutocompleteModule } from '@angular/material/autocomplete';
-import { CommonModule } from '@angular/common';
+import { CommonModule, DatePipe } from '@angular/common';
 import { BrowserAnimationsModule } from '@angular/platform-browser/animations';
 import { A11yModule } from '@angular/cdk/a11y';
 import { CdkAccordionModule } from '@angular/cdk/accordion';
@@ -115,10 +115,11 @@ import { GetFieldObjectPipe } from './shared/pipes/get-field-object.pipe';
     ScrollingModule,
     DialogModule,
     FormsModule,
-    ReactiveFormsModule
+    ReactiveFormsModule,
   ],
   providers: [
     // {provide: 'API_KEY', useValue: '010721642521f31b0fbc8c3831d45951'}
+    DatePipe,
   ],
   bootstrap: [AppComponent],
 })

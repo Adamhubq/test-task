@@ -1,5 +1,5 @@
 import { Injectable } from '@angular/core';
-import { WeatherCityResponsBody } from '@shared/interfaces/weather-api';
+import { CityResponsBody, WeatherDailyResponseBody, WeatherHourlyResponseBody } from '@shared/interfaces/weather-api';
 import { BehaviorSubject, Observable, Subject } from 'rxjs';
 
 @Injectable({
@@ -7,10 +7,8 @@ import { BehaviorSubject, Observable, Subject } from 'rxjs';
 })
 export class StoreWeatherService {
 
-  cityObject: WeatherCityResponsBody;
-
-  private _changeCityObject: Subject<WeatherCityResponsBody> = new BehaviorSubject(null);
-  changeCityObject$: Observable<WeatherCityResponsBody> = this._changeCityObject.asObservable();
+  private _changeCityObject: Subject<CityResponsBody> = new BehaviorSubject(null);
+  changeCityObject$: Observable<CityResponsBody> = this._changeCityObject.asObservable();
 
   private _changeLocale: Subject<string> = new BehaviorSubject(null);
   changeLocale$: Observable<string> = this._changeLocale.asObservable();
@@ -20,7 +18,7 @@ export class StoreWeatherService {
   
   constructor() { }
 
-  setCityObjectSelected(cityObject: WeatherCityResponsBody): void {
+  setCityObjectSelected(cityObject: CityResponsBody): void {
     this._changeCityObject.next(cityObject);
   }
 

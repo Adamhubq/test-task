@@ -19,18 +19,40 @@ export interface Temperature {
   min: number;
 }
 
-export interface WeatherCityResponsBody extends Coordinates {
+export interface CityTableDate {
+  name: string;
+  lat: number;
+  lon: number;
+}
+
+export interface CityTableDateDaily  extends CityTableDate {
+  daily?: WeatherDailyResponseBody[];
+}
+
+export interface CityTableDateHourly extends CityTableDate {
+  hourly?: WeatherHourlyResponseBody[];
+}
+
+export interface CityResponsBody extends Coordinates {
   name: string;
   local_names: { [key: string]: string };
   country: string;
   state: string;
 }
 
-// export interface WeatherCityResponsBody extends Coordinates {
-//   timezone: string;
-//   timezone_offset: number;
-//   hourly: WeatherHourlyResponseBody[] | WeatherDailyResponseBody[];
-// }
+export interface WeatherCityHourlyResponsBody extends Coordinates {
+  timezone: string;
+  timezone_offset: number;
+  hourly: WeatherHourlyResponseBody[];
+  minutely: WeatherResponseBody[];
+}
+
+export interface WeatherCityDailyResponsBody extends Coordinates {
+  timezone: string;
+  timezone_offset: number;
+  daily: WeatherDailyResponseBody[];
+  minutely: WeatherResponseBody[];
+}
 
 export interface WeatherResponseBody {
   dt: number;

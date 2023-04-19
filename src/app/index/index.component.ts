@@ -1,45 +1,113 @@
-import { ChangeDetectionStrategy, Component, OnInit } from '@angular/core';
+import { DatePipe } from '@angular/common';
+import { ChangeDetectionStrategy, ChangeDetectorRef, Component, OnInit } from '@angular/core';
 import { UntilDestroy, untilDestroyed } from '@ngneat/until-destroy';
+import {
+  CityTableDateDaily,
+  CityTableDateHourly,
+  WeatherCityDailyResponsBody,
+  WeatherCityHourlyResponsBody,
+} from '@shared/interfaces/weather-api';
 import { ApiWeatherService } from '@shared/services/api-weather.service';
 import { StoreWeatherService } from '@shared/services/store-weather.service';
-import { mergeMap } from 'rxjs';
+import { mergeMap, Observable, of } from 'rxjs';
+import { switchMap, withLatestFrom } from 'rxjs/operators';
 
-export interface PeriodicElement {
-  name: string;
-  position: number;
-  weight: number;
-  symbol: string;
-}
-
-const ELEMENT_DATA: PeriodicElement[] = [
-  { position: 1, name: 'Hydrogen', weight: 1.0079, symbol: 'H' },
-  { position: 2, name: 'Helium', weight: 4.0026, symbol: 'He' },
-  { position: 3, name: 'Lithium', weight: 6.941, symbol: 'Li' },
-  { position: 4, name: 'Beryllium', weight: 9.0122, symbol: 'Be' },
-  { position: 5, name: 'Boron', weight: 10.811, symbol: 'B' },
-  { position: 6, name: 'Carbon', weight: 12.0107, symbol: 'C' },
-  { position: 7, name: 'Nitrogen', weight: 14.0067, symbol: 'N' },
-  { position: 8, name: 'Oxygen', weight: 15.9994, symbol: 'O' },
-  { position: 9, name: 'Fluorine', weight: 18.9984, symbol: 'F' },
-  { position: 10, name: 'Neon', weight: 20.1797, symbol: 'Ne' },
-];
 
 @UntilDestroy()
 @Component({
   selector: 'app-index',
   templateUrl: './index.component.html',
-  changeDetection: ChangeDetectionStrategy.OnPush,
+  changeDetection: ChangeDetectionStrategy.OnPush
 })
 export class IndexComponent implements OnInit {
-  displayedColumns: string[] = ['position', 'name', 'weight', 'symbol'];
-  dataSource = ELEMENT_DATA;
+  displayedColumns: string[] = ['city_name'];
 
-  constructor(private _apiWeatherService: ApiWeatherService, private _storeWeatherService: StoreWeatherService) {}
+  presset: 'hourly' | 'daily' = 'hourly';
+
+  dataSourceDay: CityTableDateDaily[] = [];
+
+  dataSourceHour: CityTableDateHourly[] = [];
+
+  constructor(
+    private _apiWeatherService: ApiWeatherService,
+    private _storeWeatherService: StoreWeatherService,
+    private _cd: ChangeDetectorRef,
+  ) {}
 
   ngOnInit() {
-    // this._storeWeatherService.changeCityObject$.pipe(
-    //   mergeMap(cityObject => this._apiWeatherService.getDataCity(cityObject.lat, cityObject.lon, ))
-    //   untilDestroyed(this)
-    //   ).subscribe((cityObject) => {});
+    // todo forkjoin
+    if (this.presset === 'daily') {
+      this.loadDayPreset()
+        .pipe(switchMap((cityObject) => (cityObject ? this.loadColumnDay(cityObject) : of(null))))
+        .subscribe(null);
+    } else {
+      this.loadHourPreset()
+        .pipe(switchMap((cityObject) => (cityObject ? this.loadColumnHour(cityObject) : of(null))))
+        .subscribe(null);
+    }
+  }
+
+  loadHourPreset(): Observable<WeatherCityHourlyResponsBody> {
+    return this._storeWeatherService.changeCityObject$.pipe(
+      switchMap((cityObject) => {
+        if (!cityObject) return of(null);
+        this.dataSourceHour = [...this.dataSourceHour, {
+          name: cityObject.name,
+          lat: cityObject.lat,
+          lon: cityObject.lon,
+        }];
+        this._cd.markForCheck();
+        return this._apiWeatherService.getDataCity(cityObject.lat, cityObject.lon, 'hourly');
+      }),
+      switchMap((cityObject: WeatherCityHourlyResponsBody) => {
+        if (!cityObject) return of(null);
+        Object.defineProperty(this.dataSourceHour[this.dataSourceHour.length - 1], 'hourly', {
+          value: (cityObject as WeatherCityHourlyResponsBody).hourly,
+          writable: false,
+        });
+        this._cd.markForCheck();        return of(cityObject);
+      }),
+      untilDestroyed(this),
+    );
+  }
+
+  loadDayPreset(): Observable<WeatherCityDailyResponsBody> {
+    return this._storeWeatherService.changeCityObject$.pipe(
+      switchMap((cityObject) => {
+        if (!cityObject) return of(null);
+        this.dataSourceDay = [...this.dataSourceDay, {
+          name: cityObject.name,
+          lat: cityObject.lat,
+          lon: cityObject.lon,
+        }];
+        this._cd.markForCheck();
+        return this._apiWeatherService.getDataCity(cityObject.lat, cityObject.lon, 'daily');
+      }),
+      switchMap((cityObject: WeatherCityDailyResponsBody) => {
+        if (!cityObject) return of(null);
+        Object.defineProperty(this.dataSourceDay[this.dataSourceDay.length - 1], 'daily', {
+          value: (cityObject as WeatherCityDailyResponsBody).daily,
+          writable: false,
+        });
+        this._cd.markForCheck();        return of(cityObject);
+      }),
+      untilDestroyed(this),
+    );
+  }
+
+  loadColumnHour(cityObject: WeatherCityHourlyResponsBody): Observable<string[]> {
+    this.displayedColumns = [
+      'city_name',
+      ...cityObject?.hourly
+        .slice(0, 23)
+        .map((displayedColumn) => new Date(displayedColumn.dt * 1000).toString())
+        .filter((_, i) => i % 3 === 0),
+    ];
+    return of(this.displayedColumns);
+  }
+
+  loadColumnDay(cityObject: WeatherCityDailyResponsBody): Observable<string[]> {
+    this.displayedColumns = ['city_name', ...cityObject?.daily.map((v) => new Date(v.dt * 1000).toString())];
+    return of(this.displayedColumns);
   }
 }

@@ -1,13 +1,15 @@
-import { ChangeDetectionStrategy, Component, OnInit } from '@angular/core';
+import { ChangeDetectionStrategy, ChangeDetectorRef, Component, OnInit } from '@angular/core';
 import { FormControl } from '@angular/forms';
 import { MatAutocompleteSelectedEvent } from '@angular/material/autocomplete';
 import { MatButtonToggleChange } from '@angular/material/button-toggle';
-import { UntilDestroy } from '@ngneat/until-destroy';
-import { debounceTime, map, Observable, of, startWith, switchMap } from 'rxjs';
-import { LOCALE_ARRAY } from '../shared/constants/locales';
-import { WeatherCityResponsBody } from '../shared/interfaces/weather-api';
+import { UntilDestroy, untilDestroyed } from '@ngneat/until-destroy';
+import { debounceTime, Observable, of, startWith, switchMap } from 'rxjs';
+import { EN_LOCALE_EMPTY_RESPONSE, LOCALE_ARRAY } from '../shared/constants/locales';
+import { CityResponsBody } from '../shared/interfaces/weather-api';
 import { ApiWeatherService } from '../shared/services/api-weather.service';
 import { StoreWeatherService } from '../shared/services/store-weather.service';
+
+@UntilDestroy()
 @Component({
   selector: 'app-header',
   templateUrl: './header.component.html',
@@ -17,52 +19,56 @@ import { StoreWeatherService } from '../shared/services/store-weather.service';
 export class HeaderComponent implements OnInit {
   controlLocale = new FormControl('en');
   locales: string[] = LOCALE_ARRAY;
+  respEmptyRes: string = EN_LOCALE_EMPTY_RESPONSE;
 
-  cityName = new FormControl('');
-  cityNames: WeatherCityResponsBody[] = [];
+  cityName = new FormControl();
+  cityNames: CityResponsBody[] = [];
 
   filteredLocales: Observable<string[]> | undefined;
-  filteredCityNames: Observable<string[]> | undefined;
+  filteredCity: CityResponsBody[] = [];
 
   presset = new FormControl('hourly');
 
-  constructor(private _apiWeatherService: ApiWeatherService, private _storeWeatherService: StoreWeatherService) {}
-
-  ngOnInit() {
-    // this.controlLocale.valueChanges.pipe(
-    //   startWith(''),
-    //   map((value) => this._filter(value || '')),
-    // );
-
-    this.filteredCityNames = this.cityName.valueChanges.pipe(
-      startWith(''),
-      debounceTime(1000),
-      switchMap((res) => {
-        if (!res || res.length < 3) return of('');
-        return this._apiWeatherService.searchCity(<string>res, 10);
-      }),
-      map((value) => value ?? []),
-    );
+  get filteredCityNames(): string[] {
+    return this.filteredCity?.map((city) => `${city.name}(${city.country})`) ?? [];
   }
 
-  selectedCity($event: MatAutocompleteSelectedEvent) {
-    this.cityName.setValue(`${$event.option.value.name}(${$event.option.value.country})`);
-    this._storeWeatherService.setCityObjectSelected(this._storeWeatherService.cityObject);
+  get emptyResponse(): string {
+    return this.cityName.value?.length && !this.filteredCityNames.length ? this.respEmptyRes :'';
+  }
+
+  constructor(
+    private _apiWeatherService: ApiWeatherService,
+    private _storeWeatherService: StoreWeatherService,
+    private _cd: ChangeDetectorRef,
+  ) {}
+
+  ngOnInit() {
+    this.cityName.valueChanges
+      .pipe(
+        startWith(''),
+        debounceTime(1000),
+        switchMap((res) => {
+          if (res.length < 3) return of(null);
+          return this._apiWeatherService.searchCity(<string>res, 10);
+        }),
+        untilDestroyed(this),
+      )
+      .subscribe((cityList: CityResponsBody[]) => {
+        this.filteredCity = cityList;
+        this._cd.markForCheck();
+      });
+  }
+
+  selectedCity(index: number) {
+    this._storeWeatherService.setCityObjectSelected(this.filteredCity[index]);
   }
 
   selectedPreset($event: MatButtonToggleChange) {
-    console.log($event);
-    this._storeWeatherService.setCityObjectSelected(this._storeWeatherService.cityObject);
+    this._storeWeatherService.setPresseteSelected($event.value);
   }
 
   selectedLocale($event: MatAutocompleteSelectedEvent) {
-    this.cityName.setValue(`${$event.option.value.name}(${$event.option.value.country})`);
-    this._storeWeatherService.setCityObjectSelected(this._storeWeatherService.cityObject);
-  }
-
-  private _filter(value: string): string[] {
-    const filterValue = value.toLowerCase();
-
-    return this.locales.filter((locale) => locale.toLowerCase().includes(filterValue));
+    this._storeWeatherService.setLocaleSelected($event.option.value);
   }
 }

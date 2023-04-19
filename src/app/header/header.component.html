@@ -3,20 +3,31 @@
     <div class="d-flex align-items-center w-50 justify-content-start">
       <mat-form-field class="w-50">
         <mat-label>City name</mat-label>
-        <input [formControl]="cityName" type="text" matInput [matAutocomplete]="cityBlock" />
-        <mat-autocomplete #cityBlock="matAutocomplete" (optionSelected)="selectedCity($event)">
-          <mat-option class="bg-dark" *ngFor="let cityName of filteredCityNames | async" [value]="cityName">
-            {{ cityName.name }}({{ cityName.country }})
+        <input
+          [matTooltip]="emptyResponse"
+          [formControl]="cityName"
+          type="text"
+          matInput
+          [matAutocomplete]="cityBlock"
+        />
+        <mat-autocomplete #cityBlock="matAutocomplete">
+          <mat-option
+            class="bg-dark"
+            *ngFor="let cityName of filteredCityNames; let i = index"
+            (onSelectionChange)="selectedCity($event, i)"
+            [value]="cityName"
+          >
+            {{ cityName }}
           </mat-option>
         </mat-autocomplete>
       </mat-form-field>
 
-      <mat-button-toggle-group [formControl]="presset"  class="split-button ms-5" (change)="selectedPreset($event)">
+      <mat-button-toggle-group [formControl]="presset" class="split-button ms-5" (change)="selectedPreset($event)">
         <mat-button-toggle class="w-50" value="hourly">By hours</mat-button-toggle>
         <mat-button-toggle class="w-50" value="daily">By days</mat-button-toggle>
       </mat-button-toggle-group>
     </div>
-    
+
     <mat-form-field class="example-full-width">
       <mat-label>Locale</mat-label>
       <mat-select [formControl]="controlLocale" (selectionChange)="selectedPreset($event)">

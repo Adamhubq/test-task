@@ -135,3 +135,5 @@ export const LOCALE_ARRAY = [
   'fy',
   'tk',
 ];
+
+export const EN_LOCALE_EMPTY_RESPONSE = 'have not found';
