@@ -1,2 +1,13 @@
 @import '../node_modules/bootstrap/scss/bootstrap.scss';
 @import '../node_modules/@angular/material/prebuilt-themes/purple-green.css';
+
+.mat-mdc-snack-bar-container {
+    & div.mdc-snackbar__surface {
+        background-color: #f0ad4e;
+        
+    }
+    & div.mdc-snackbar__label, span.mdc-button__label{
+        font-size: 20px;
+        font-weight: bold;
+    }
+}
