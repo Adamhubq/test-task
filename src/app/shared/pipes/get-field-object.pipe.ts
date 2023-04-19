@@ -5,13 +5,10 @@ import { WeatherCityResponsBody } from '../interfaces/weather-api';
   name: 'getFieldObject',
 })
 export class GetFieldObjectPipe implements PipeTransform {
-  transform(cityObjects: WeatherCityResponsBody[], field: string): string[] {
-    if (!cityObjects) return [''];
-    return cityObjects?.map((cityObject) => {
-      if (cityObject.hasOwnProperty(field) && typeof cityObject[field] === 'string') {
-        return cityObject[field];
-      }
-      return '';
-    });
+  transform(cityObject: WeatherCityResponsBody, field: string): string {
+    if (cityObject.hasOwnProperty(field) && typeof cityObject[field] === 'string') {
+      return cityObject[field];
+    }
+    return '';
   }
 }
