@@ -12,12 +12,11 @@ import { StoreWeatherService } from '@shared/services/store-weather.service';
 import { mergeMap, Observable, of } from 'rxjs';
 import { switchMap, withLatestFrom } from 'rxjs/operators';
 
-
 @UntilDestroy()
 @Component({
   selector: 'app-index',
   templateUrl: './index.component.html',
-  changeDetection: ChangeDetectionStrategy.OnPush
+  changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class IndexComponent implements OnInit {
   displayedColumns: string[] = ['city_name'];
@@ -51,12 +50,14 @@ export class IndexComponent implements OnInit {
     return this._storeWeatherService.changeCityObject$.pipe(
       switchMap((cityObject) => {
         if (!cityObject) return of(null);
-        this.dataSourceHour = [...this.dataSourceHour, {
-          name: cityObject.name,
-          lat: cityObject.lat,
-          lon: cityObject.lon,
-        }];
-        this._cd.markForCheck();
+        this.dataSourceHour = [
+          ...this.dataSourceHour,
+          {
+            name: cityObject.name,
+            lat: cityObject.lat,
+            lon: cityObject.lon,
+          },
+        ];
         return this._apiWeatherService.getDataCity(cityObject.lat, cityObject.lon, 'hourly');
       }),
       switchMap((cityObject: WeatherCityHourlyResponsBody) => {
@@ -65,7 +66,8 @@ export class IndexComponent implements OnInit {
           value: (cityObject as WeatherCityHourlyResponsBody).hourly,
           writable: false,
         });
-        this._cd.markForCheck();        return of(cityObject);
+        this._cd.markForCheck();
+        return of(cityObject);
       }),
       untilDestroyed(this),
     );
@@ -75,12 +77,14 @@ export class IndexComponent implements OnInit {
     return this._storeWeatherService.changeCityObject$.pipe(
       switchMap((cityObject) => {
         if (!cityObject) return of(null);
-        this.dataSourceDay = [...this.dataSourceDay, {
-          name: cityObject.name,
-          lat: cityObject.lat,
-          lon: cityObject.lon,
-        }];
-        this._cd.markForCheck();
+        this.dataSourceDay = [
+          ...this.dataSourceDay,
+          {
+            name: cityObject.name,
+            lat: cityObject.lat,
+            lon: cityObject.lon,
+          },
+        ];
         return this._apiWeatherService.getDataCity(cityObject.lat, cityObject.lon, 'daily');
       }),
       switchMap((cityObject: WeatherCityDailyResponsBody) => {
@@ -89,7 +93,8 @@ export class IndexComponent implements OnInit {
           value: (cityObject as WeatherCityDailyResponsBody).daily,
           writable: false,
         });
-        this._cd.markForCheck();        return of(cityObject);
+        this._cd.markForCheck();
+        return of(cityObject);
       }),
       untilDestroyed(this),
     );

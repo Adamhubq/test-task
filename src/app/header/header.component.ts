@@ -2,6 +2,7 @@ import { ChangeDetectionStrategy, ChangeDetectorRef, Component, OnInit } from '@
 import { FormControl } from '@angular/forms';
 import { MatAutocompleteSelectedEvent } from '@angular/material/autocomplete';
 import { MatButtonToggleChange } from '@angular/material/button-toggle';
+import { MatSnackBar } from '@angular/material/snack-bar';
 import { UntilDestroy, untilDestroyed } from '@ngneat/until-destroy';
 import { debounceTime, Observable, of, startWith, switchMap } from 'rxjs';
 import { EN_LOCALE_EMPTY_RESPONSE, LOCALE_ARRAY } from '../shared/constants/locales';
@@ -14,7 +15,7 @@ import { StoreWeatherService } from '../shared/services/store-weather.service';
   selector: 'app-header',
   templateUrl: './header.component.html',
   styleUrls: ['./header.component.scss'],
-  changeDetection: ChangeDetectionStrategy.OnPush,
+  // changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class HeaderComponent implements OnInit {
   controlLocale = new FormControl('en');
@@ -41,6 +42,7 @@ export class HeaderComponent implements OnInit {
     private _apiWeatherService: ApiWeatherService,
     private _storeWeatherService: StoreWeatherService,
     private _cd: ChangeDetectorRef,
+    private _snackBar: MatSnackBar
   ) {}
 
   ngOnInit() {
@@ -56,6 +58,9 @@ export class HeaderComponent implements OnInit {
       )
       .subscribe((cityList: CityResponsBody[]) => {
         this.filteredCity = cityList;
+        if(this.cityName.value && !this.filteredCity?.length) {
+          this.openSnackBar('city not found', 'ok')
+        }
         this._cd.markForCheck();
       });
   }
@@ -70,5 +75,11 @@ export class HeaderComponent implements OnInit {
 
   selectedLocale($event: MatAutocompleteSelectedEvent) {
     this._storeWeatherService.setLocaleSelected($event.option.value);
+  }
+
+  openSnackBar(message: string, action: string) {
+    console.log(1);
+    
+    this._snackBar.open(message, action);
   }
 }

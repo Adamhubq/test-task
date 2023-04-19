@@ -4,7 +4,6 @@
       <mat-form-field class="w-50">
         <mat-label>City name</mat-label>
         <input
-          [matTooltip]="emptyResponse"
           [formControl]="cityName"
           type="text"
           matInput
@@ -14,7 +13,7 @@
           <mat-option
             class="bg-dark"
             *ngFor="let cityName of filteredCityNames; let i = index"
-            (onSelectionChange)="selectedCity($event, i)"
+            (onSelectionChange)="selectedCity(i)"
             [value]="cityName"
           >
             {{ cityName }}
