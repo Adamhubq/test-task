@@ -1,7 +1,7 @@
-import { DatePipe } from '@angular/common';
 import { ChangeDetectionStrategy, ChangeDetectorRef, Component, OnInit } from '@angular/core';
 import { UntilDestroy, untilDestroyed } from '@ngneat/until-destroy';
 import {
+  CityResponsBody,
   CityTableDateDaily,
   CityTableDateHourly,
   WeatherCityDailyResponsBody,
@@ -9,8 +9,7 @@ import {
 } from '@shared/interfaces/weather-api';
 import { ApiWeatherService } from '@shared/services/api-weather.service';
 import { StoreWeatherService } from '@shared/services/store-weather.service';
-import { mergeMap, Observable, of } from 'rxjs';
-import { switchMap, withLatestFrom } from 'rxjs/operators';
+import { switchMap, Observable, of, forkJoin } from 'rxjs';
 
 @UntilDestroy()
 @Component({
@@ -35,6 +34,10 @@ export class IndexComponent implements OnInit {
 
   ngOnInit() {
     // todo forkjoin
+    this._storeWeatherService.changePresset$.subscribe((preset) => {
+      this.presset = preset;
+      this;
+    });
     if (this.presset === 'daily') {
       this.loadDayPreset()
         .pipe(switchMap((cityObject) => (cityObject ? this.loadColumnDay(cityObject) : of(null))))
@@ -50,14 +53,7 @@ export class IndexComponent implements OnInit {
     return this._storeWeatherService.changeCityObject$.pipe(
       switchMap((cityObject) => {
         if (!cityObject) return of(null);
-        this.dataSourceHour = [
-          ...this.dataSourceHour,
-          {
-            name: cityObject.name,
-            lat: cityObject.lat,
-            lon: cityObject.lon,
-          },
-        ];
+        this.dataSourceHour = this._setArrayWithUpdate(this.dataSourceHour, cityObject);
         return this._apiWeatherService.getDataCity(cityObject.lat, cityObject.lon, 'hourly');
       }),
       switchMap((cityObject: WeatherCityHourlyResponsBody) => {
@@ -77,14 +73,7 @@ export class IndexComponent implements OnInit {
     return this._storeWeatherService.changeCityObject$.pipe(
       switchMap((cityObject) => {
         if (!cityObject) return of(null);
-        this.dataSourceDay = [
-          ...this.dataSourceDay,
-          {
-            name: cityObject.name,
-            lat: cityObject.lat,
-            lon: cityObject.lon,
-          },
-        ];
+        this.dataSourceDay = this._setArrayWithUpdate(this.dataSourceDay, cityObject);
         return this._apiWeatherService.getDataCity(cityObject.lat, cityObject.lon, 'daily');
       }),
       switchMap((cityObject: WeatherCityDailyResponsBody) => {
@@ -114,5 +103,25 @@ export class IndexComponent implements OnInit {
   loadColumnDay(cityObject: WeatherCityDailyResponsBody): Observable<string[]> {
     this.displayedColumns = ['city_name', ...cityObject?.daily.map((v) => new Date(v.dt * 1000).toString())];
     return of(this.displayedColumns);
+  }
+
+  private _setArrayWithUpdate(array: CityTableDateHourly[] | CityTableDateDaily[], cityObject: CityResponsBody) {
+    return [
+      ...array,
+      {
+        name: cityObject.name,
+        lat: cityObject.lat,
+        lon: cityObject.lon,
+      },
+    ];
+  }
+
+  private _loadWithChangePresset(): Observable<Object[]> {
+    if (this.presset === 'daily') {
+      return forkJoin(this.dataSourceDay.map((city) => this._apiWeatherService.getDataCity(city.lat, city.lon, this.presset)));
+    }
+    if (this.presset === 'hourly') {
+      return forkJoin(this.dataSourceHour.map((city) => this._apiWeatherService.getDataCity(city.lat, city.lon, this.presset)));
+    }
   }
 }

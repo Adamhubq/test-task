@@ -15,7 +15,7 @@ import { StoreWeatherService } from '../shared/services/store-weather.service';
   selector: 'app-header',
   templateUrl: './header.component.html',
   styleUrls: ['./header.component.scss'],
-  // changeDetection: ChangeDetectionStrategy.OnPush,
+  changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class HeaderComponent implements OnInit {
   controlLocale = new FormControl('en');
@@ -46,23 +46,8 @@ export class HeaderComponent implements OnInit {
   ) {}
 
   ngOnInit() {
-    this.cityName.valueChanges
-      .pipe(
-        startWith(''),
-        debounceTime(1000),
-        switchMap((res) => {
-          if (res.length < 3) return of(null);
-          return this._apiWeatherService.searchCity(<string>res, 10);
-        }),
-        untilDestroyed(this),
-      )
-      .subscribe((cityList: CityResponsBody[]) => {
-        this.filteredCity = cityList;
-        if(this.cityName.value && !this.filteredCity?.length) {
-          this.openSnackBar('city not found', 'ok')
-        }
-        this._cd.markForCheck();
-      });
+    this._obserableCityName();
+    this._storeWeatherService.setPresseteSelected('hourly');
   }
 
   selectedCity(index: number) {
@@ -81,5 +66,25 @@ export class HeaderComponent implements OnInit {
     console.log(1);
     
     this._snackBar.open(message, action);
+  }
+
+  private _obserableCityName(): void{
+    this.cityName.valueChanges
+    .pipe(
+      startWith(''),
+      debounceTime(1000),
+      switchMap((res) => {
+        if (res.length < 3) return of(null);
+        return this._apiWeatherService.searchCity(<string>res, 10);
+      }),
+      untilDestroyed(this),
+    )
+    .subscribe((cityList: CityResponsBody[]) => {
+      this.filteredCity = cityList;
+      if (this.cityName.value && !this.filteredCity?.length) {
+        this.openSnackBar('city not found', 'ok');
+      }
+      this._cd.markForCheck();
+    });
   }
 }

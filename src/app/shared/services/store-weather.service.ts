@@ -13,8 +13,8 @@ export class StoreWeatherService {
   private _changeLocale: Subject<string> = new BehaviorSubject(null);
   changeLocale$: Observable<string> = this._changeLocale.asObservable();
 
-  private _changePresset: Subject<string> = new BehaviorSubject(null);
-  changePresset$: Observable<string> = this._changePresset.asObservable();
+  private _changePresset: Subject<'hourly' | 'daily'> = new BehaviorSubject(null);
+  changePresset$: Observable<'hourly' | 'daily'> = this._changePresset.asObservable();
   
   constructor() { }
 
@@ -26,7 +26,7 @@ export class StoreWeatherService {
     this._changeLocale.next(locale);
   }
 
-  setPresseteSelected(presset: string): void {
+  setPresseteSelected(presset: 'hourly' | 'daily'): void {
     this._changePresset.next(presset);
   }
 }
