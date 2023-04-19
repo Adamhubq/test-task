@@ -1,4 +1,5 @@
 import { ChangeDetectionStrategy, ChangeDetectorRef, Component, OnInit } from '@angular/core';
+import { RouterLink } from '@angular/router';
 import { UntilDestroy, untilDestroyed } from '@ngneat/until-destroy';
 import {
   CityResponsBody,
@@ -108,6 +109,7 @@ export class IndexComponent implements OnInit {
         name: cityObject.name,
         lat: cityObject.lat,
         lon: cityObject.lon,
+        country: cityObject.country
       },
     ];
   }

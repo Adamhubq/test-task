@@ -23,6 +23,7 @@ export interface CityTableDate {
   name: string;
   lat: number;
   lon: number;
+  country?: string
 }
 
 export interface CityTableDateDaily  extends CityTableDate {
